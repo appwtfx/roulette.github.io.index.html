@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<title>✅secure✅</title>
+
+
+<body>
+
+<style>
+body {
+  margin: 1.75rem;
+  background: #efefef;
+}
+</style>
+</body>
+<div class="max-w-lg my-0 mx-auto">
+  <h1 class="text-2xl mb-4 underline">device to download detected continue to option page.</h1>
+
+  
+    <p class="my-1"><span class="font-bold">userAgent:</span> <span id="useragent">-</span></p>
+    <p class="my-1"><span class="font-bold">appVersion:</span> <span id="appVersion">-</span></p>
+    <p class="my-1"><span class="font-bold">platform:</span> <span id="platform">-</span></p>
+
+  <p>dev-wtfxadmin</p>
+    
+
+ 
+<script>
+/**
+ * # Detect Current Apple Device (macOS or iOS) and Browser
+ * (Chrome or not Chrome)
+ *
+ * Misc Notes
+ * - https://github.com/DamonOehlman/detect-browser (not tested)
+ */
+
+/**
+ * The problem with > iOS 13 in general is that it mimics the user agent of Macs.
+ * Therefore it is difficult to get the correct iOS Version >= 13.
+ * @see https://stackoverflow.com/a/57838385/1238150
+ *
+ * inspired by
+ * @see https://codepen.io/niggi/pen/DtIfy
+ */
+function detectIosVersion() {
+  if (/iP(hone|od|ad)/.test(navigator.platform)) {
+    var v = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+
+    const result = [
+      parseInt(v[1], 10),
+      parseInt(v[2], 10),
+      parseInt(v[3] || 0, 10)
+    ].join(".");
+
+    return result;
+  }
+
+  return "-";
+}
+
+/**
+ * Detect Apple OS by testing if `window.ontouchstart` exists
+ *
+ * @see https://stackoverflow.com/q/58019463/1238150
+ *
+ * Alternatives
+ * - https://stackoverflow.com/a/57654258/1238150 (with `TouchEvent`)
+ * - https://stackoverflow.com/a/60553965/1238150 (with `Canvas`)
+ */
+function detectAppleOs() {
+  if (/Safari[\/\s](\d+\.\d+)/.test(window.navigator.userAgent)) {
+    return "ontouchstart" in window ? "iOS" : "macOS";
+  }
+
+  if (window.navigator.platform === "MacIntel") {
+    return "macOS";
+  }
+
+  return "No Apple Device";
+}
+
+/**
+ * Apple Device detection with >iOS13 support
+ *
+ * What is `navigator.standalone`?
+ * > Returns a boolean indicating whether the browser is running in standalone mode.
+ * > Available on Apple's iOS Safari only.
+ * > (https://developer.mozilla.org/de/docs/Web/API/Navigator)
+ *
+ * @see https://stackoverflow.com/a/62980780/1238150
+ * @see https://racase.com.np/javascript-how-to-detect-if-device-is-ios/
+ *
+ * Misc:
+ * - detect if site is running in standalone (added to home screen):
+ *   https://stackoverflow.com/a/40932368/1238150
+^ */
+function detectIosDevices() {
+  // devices prior to iOS 13
+  if (/iPad|iPhone|iPod/.test(navigator.platform)) {
+    return navigator.platform;
+  }
+
+  // or with document.createEvent('TouchEvent'), which is only available on iPads (and iPhones)
+  return !!(
+    navigator.platform === "MacIntel" &&
+    typeof navigator.standalone !== "undefined"
+  )
+    ? "iPad"
+    : navigator.platform === "MacIntel"
+    ? "Macbook"
+    : "No Apple Device";
+}
+
+/**
+ * Detects iPhone, iPad and Desktop computer
+ *
+ * inspired by
+ * @see https://stackoverflow.com/a/59016446/1238150 (Nov. 2019)
+ */
+function detectDevice() {
+  var agent = window.navigator.userAgent;
+
+  // iPhone
+  IsIPhone = agent.match(/iPhone/i) != null;
+
+  // iPad up to IOS12
+  IsIPad = agent.match(/iPad/i) != null;
+
+  if (IsIPad) {
+    IsIPhone = false;
+  }
+
+  // iPad from IOS13
+  var macApp = agent.match(/Macintosh/i) != null;
+
+  // also used in https://stackoverflow.com/a/60553965/1238150
+  if (macApp) {
+    // need to distinguish between Macbook and iPad
+    var canvas = document.createElement("canvas");
+    if (canvas != null) {
+      var context =
+        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (context) {
+        var info = context.getExtension("WEBGL_debug_renderer_info");
+        if (info) {
+          var renderer = context.getParameter(info.UNMASKED_RENDERER_WEBGL);
+          if (renderer.indexOf("Apple") != -1) {
+            IsIPad = true;
+          }
+        }
+      }
+    }
+  }
+
+  if (IsIPhone) {
+    return "iPhone";
+  } else if (IsIPad) {
+    return "iPad";
+  } else {
+    // right now we do not distinguish between the two of them
+    return "Desktop computer";
+  }
+}
+
+/**
+ * Detects if current Browser is Chrome. Also works on iOS devices.
+ */
+function detectChrome() {
+  // http://browserhacks.com/
+  // https://stackoverflow.com/a/9851769/1238150
+  const isChrome =
+    !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+
+  // https://stackoverflow.com/a/37178303/1238150
+  return /Chrome|CriOS/i.test(navigator.userAgent) || isChrome;
+}
+
+function detectFirefox() {
+  return /Firefox|FxiOS/i.test(navigator.userAgent);
+}
+
+function detectBrowser() {
+  if (detectChrome()) {
+    return "Chrome";
+  }
+  if (detectFirefox()) {
+    return "Firefox";
+  }
+
+  // Attention: catchall-fallback with no guarantee
+  return "Safari";
+}
+
+// DOMContentLoaded
+// @see https://developer.mozilla.org/en-US/docs/Web/Events/DOMContentLoaded
+document.addEventListener("DOMContentLoaded", function () {
+  // navigator
+  document.getElementById("useragent").innerText = navigator.userAgent || "-";
+  document.getElementById("platform").innerText = navigator.platform || "-";
+  document.getElementById("appVersion").innerText = navigator.appVersion || "-";
+  document.getElementById("vendor").innerText = navigator.vendor || "-";
+
+  // feature detection
+  document.getElementById("AppleOS").innerText = detectAppleOs();
+  document.getElementById("AppleDevice").innerText = detectIosDevices();
+  document.getElementById("DeviceDetection").innerText = detectDevice();
+  document.getElementById("Browser").innerText = detectBrowser();
+  document.getElementById("iOSVersion").innerText = detectIosVersion();
+});
+
+</script>
+</html>
+
+
+<!DOCTYPE html>
+<html>
+<title>✅secure✅</title>
+
+
+<body>
+
+<style>
+
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,100,500,300italic,500italic,700italic,900,300);
+
+body{
+  font-family: "Roboto";
+}
+
+h1{
+  text-align: center;
+  margin: 80px 0;
+  font-weight: 300;
+}
+h3{
+  text-align: center;
+  margin: 0 0 60px 0;
+  font-weight: 100;
+  text-transform: uppercase;
+}
+
+.nav{
+  width: 500px;
+  margin: auto;
+  text-align: center;
+  list-style-type: none;
+  background: #e74c3c;
+  color: white;
+  padding: 60px;
+  letter-spacing: 0.5em;
+  font-weight: 300;
+  border-radius: 20px;
+}
+.btn{
+  padding: 50px;
+  width: 80%;
+  background: #ecf0f1;
+  margin: 30px 0px;
+  color: #2c3e50;
+  border-radius: 10px;
+}
+a{
+  text-decoration: none;
+  color: white;
+}
+</style>
+
+
+
+</body>
+<ul class="nav">
+  <h3>Make your choice to download the roulette bot +1xbet mod versions.</h3>
+  <a href="#"><li class="btn">10-day valid package application</li></a>
+  <a href="#"><li class="btn">365-day valid package application</li></a>
+ 
+</ul>
+<script>
+(function() {
+  TweenMax.from("h1", 0.5, {
+    opacity: 0,
+    scale: 0
+  }, 2);
+
+  TweenMax.from("h3", 0.5, {
+    opacity: 0,
+    scale: 0
+  }, 2);
+
+  TweenMax.staggerFrom(".btn", 2, {
+    scale: 0.7,
+    opacity: 0,
+    delay: 0.5,
+    ease: Elastic.easeOut
+  }, 0.2);
+
+}).call(this);
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiPGFub255bW91cz4iXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFBQSxRQUFRLENBQUMsSUFBVCxDQUFjLElBQWQsRUFBb0IsR0FBcEIsRUFBeUI7SUFBQyxPQUFBLEVBQVMsQ0FBVjtJQUFhLEtBQUEsRUFBTztFQUFwQixDQUF6QixFQUFpRCxDQUFqRDs7RUFDQSxRQUFRLENBQUMsSUFBVCxDQUFjLElBQWQsRUFBb0IsR0FBcEIsRUFBeUI7SUFBQyxPQUFBLEVBQVMsQ0FBVjtJQUFhLEtBQUEsRUFBTztFQUFwQixDQUF6QixFQUFpRCxDQUFqRDs7RUFFQSxRQUFRLENBQUMsV0FBVCxDQUFxQixNQUFyQixFQUE2QixDQUE3QixFQUFnQztJQUFDLEtBQUEsRUFBTSxHQUFQO0lBQVksT0FBQSxFQUFTLENBQXJCO0lBQXdCLEtBQUEsRUFBTyxHQUEvQjtJQUFvQyxJQUFBLEVBQUssT0FBTyxDQUFDO0VBQWpELENBQWhDLEVBQTJGLEdBQTNGO0FBSEEiLCJzb3VyY2VzQ29udGVudCI6WyJUd2Vlbk1heC5mcm9tKFwiaDFcIiwgMC41LCB7b3BhY2l0eTogMCwgc2NhbGU6IDB9LCAyKTtcblR3ZWVuTWF4LmZyb20oXCJoM1wiLCAwLjUsIHtvcGFjaXR5OiAwLCBzY2FsZTogMH0sIDIpO1xuXG5Ud2Vlbk1heC5zdGFnZ2VyRnJvbShcIi5idG5cIiwgMiwge3NjYWxlOjAuNywgb3BhY2l0eTogMCwgZGVsYXk6IDAuNSwgZWFzZTpFbGFzdGljLmVhc2VPdXR9LCAwLjIpO1xuXG4iXX0=
+//# sourceURL=coffeescript
+
+
+</script>
+</html>
